@@ -13,10 +13,12 @@
                  (bitwise-xor poly (arithmetic-shift v -1)))))
          ((>= bit 8) v)))))
 
-(define (crc data)
+(fill-crc-table! #xedb88320)
+
+(define (crc data #!optional (start 4294967295))
   (let ((len (u8vector-length data)))
     (do ((i 0 (+ i 1))
-         (c 4294967295
+         (c start
             (bitwise-xor
              (u32vector-ref
               *crc-table*
