@@ -3,9 +3,17 @@
         (ref-magic (u8vector 137 80 78 71 13 10 26 10)))
     (if (not (equal? magic ref-magic)) (error "not a PNG file on " port))))
 
-(define (png-fourcc-to-integer str)
+(define (png-fourcc->integer str)
   (let ((v (list->u8vector (map char->integer (string->list str)))))
     (png-be32-decode v)))
+
+(define (png-integer->fourcc i)
+  (string
+   (integer->char (bitwise-and (arithmetic-shift i -24) 255))
+   (integer->char (bitwise-and (arithmetic-shift i -16) 255))
+   (integer->char (bitwise-and (arithmetic-shift i -8) 255))
+   (integer->char (bitwise-and i 255))))
+   
 
 (define (png-be32-decode v)
   (bitwise-ior
@@ -41,5 +49,9 @@
   (let loop ((l '()))
     (let ((c (png-read-chunk port)))
       (if (= (png-chunk-type c) (png-fourcc-to-integer "IEND"))
-	(reverse! (cons c l))
+	(reverse (cons c l))
 	(loop (cons c l))))))
+
+(define (png-read port)
+  (png-check-magic port)
+  (png-read-chunks port))
